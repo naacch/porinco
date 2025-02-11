@@ -30,12 +30,10 @@ class Norm(ABC):
     @abstractmethod
     def fit(self) -> None:
         """Computes necessary values for normalization."""
-        pass
 
     @abstractmethod
     def _transform(self) -> pd.DataFrame:
         """Applies normalization using precomputed values."""
-        pass
 
     def transform(self) -> pd.DataFrame:
         """Validates parameters and applies transformation."""
@@ -45,12 +43,10 @@ class Norm(ABC):
     @abstractmethod
     def _required_params(self) -> set[str]:
         """Defines the set of required parameters for validation."""
-        pass
 
     @abstractmethod
     def inverse_transform(self) -> pd.DataFrame:
         """Applies inverse transformation."""
-        pass
 
 
 class LinealNorm(Norm):
@@ -62,9 +58,7 @@ class LinealNorm(Norm):
 
 
 class Classic(LinealNorm):
-
-    def __init__(self, data) -> None:
-        super().__init__(data)
+    """Classic normalization."""
 
     def fit(self) -> None:
         """Computes mean and standard deviation for normalization."""
@@ -85,9 +79,6 @@ class Classic(LinealNorm):
 
 class MinMaxNorm(LinealNorm):
     """Min-max normalization."""
-
-    def __init__(self, data) -> None:
-        super().__init__(data)
 
     def fit(self) -> None:
         """Computes the minimum and maximum values for normalization."""
@@ -112,9 +103,6 @@ class MinMaxNorm(LinealNorm):
 
 class Balanced(LinealNorm):
     """Balanced Normalization: Scales data between -1 and 1."""
-
-    def __init__(self, data) -> None:
-        super().__init__(data)
 
     def fit(self) -> None:
         """Computes the median, minimum, and maximum values for normalization."""
@@ -161,3 +149,11 @@ def apply_norm(
     if new_range:
         norm_data = change_range(norm_data, new_range)
     return norm_data
+
+
+if __name__ == "__main__":
+    data = pd.read_excel("test/datasets/data.xlsx", index_col=0)
+    normalizations = [Classic, MinMaxNorm, Balanced]
+    for norm in normalizations:
+        norm_data = apply_norm(norm(data))
+        print(norm_data)

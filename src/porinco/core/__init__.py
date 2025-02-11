@@ -1,1 +1,1 @@
-from . import norm
+from .model import MainModel

@@ -1,0 +1,3 @@
+- prueba read_data para los diferentes tipos de archivo
+- test para norm
+- cambiar requirements.txt
