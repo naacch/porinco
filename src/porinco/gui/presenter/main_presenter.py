@@ -33,8 +33,7 @@ class MainPresenter:
         self.main_window = main_window
         self.main_model = main_model
 
-    # TODO: manejo de errores
-    def _get_filepath(self) -> str:
+    def _get_filepath(self) -> str | None:
         """Get the path of the file."""
         path = tk.filedialog.askopenfilename(
             initialdir="/",
@@ -46,9 +45,11 @@ class MainPresenter:
     def open_file(self) -> pd.DataFrame:
         """Open a file."""
         filepath = self._get_filepath()
+        if not filepath:
+            tk.messagebox.showerror("Error", "No file selected.")
+            return
         self.main_model.raw_data = self.main_model.read_data(filepath, index_col=0)
-        print(self.main_model.raw_data)
-        # TODO: mostrar datos en tv
+        self.main_window.treeview.display_data(self.main_model.raw_data)
 
     def export_file(self) -> pd.DataFrame:
         """Export a file."""
