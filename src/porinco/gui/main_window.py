@@ -13,11 +13,12 @@ GEOMETRY = "1400x800"
 class Presenter(Protocol):
     """Presenter for the main window."""
 
-    def open_file(self):
-        """Open a file."""
+    normalizations: dict  # TODO: typehints
 
-    def export_file(self):
-        """Export a file."""
+    def open_file(self) -> None: ...
+    def export_file(self) -> None: ...
+    def update_selected_norm(self, norm: str) -> None: ...
+    def apply_and_display_norm(self) -> None: ...
 
 
 class MainWindow(ctk.CTk):
@@ -38,7 +39,7 @@ class MainWindow(ctk.CTk):
 
         self._create_data_file_module(presenter)
         self._create_polarity_module()
-        self._create_norm_module()
+        self._create_norm_module(presenter)
 
     def _create_data_file_module(self, presenter: Presenter) -> None:
         """Create the data file module with open and export functionality."""
@@ -71,8 +72,28 @@ class MainWindow(ctk.CTk):
         cb = ctk.CTkCheckBox(frame, text="Taxonomy")
         cb.grid(row=0, column=2, padx=(5, 10), pady=5)
 
-    def _create_norm_module(self) -> None:
+    def _create_norm_module(self, presenter: Presenter) -> None:
         """Create the normalization module."""
-        frame = wdg.SelectionFrame(self)
-        frame.create_widgets()
-        frame.place(relx=0.17, rely=0.83, relwidth=0.18, relheight=0.16)
+        outer_frame = wdg.SelectionFrame(self)
+        iner_frame = wdg.AutoArrangeFrame(outer_frame)
+
+        label = ctk.CTkLabel(outer_frame, text="Normalization")
+
+        option_menu = ctk.CTkOptionMenu(
+            iner_frame,
+            values=list(presenter.normalizations.keys()),
+            command=lambda value: presenter.update_selected_norm(value),
+        )
+        option_menu.set("Select an option")
+
+        widgets = [
+            option_menu,
+            ctk.CTkButton(
+                iner_frame, text="Accept", command=presenter.apply_and_display_norm
+            ),
+        ]
+
+        iner_frame.place_widgets(widgets)
+
+        outer_frame.place(relx=0.17, rely=0.83, relwidth=0.18, relheight=0.16)
+        outer_frame.place_widgets(label, iner_frame)

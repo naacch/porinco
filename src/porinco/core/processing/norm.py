@@ -7,6 +7,8 @@ import pandas as pd
 
 
 class Range(NamedTuple):
+    """d"""
+
     min_value: float
     max_value: float
 
@@ -128,32 +130,8 @@ class Balanced(LinealNorm):
         return {"median", "min_value", "max_value"}
 
 
-def change_range(data: pd.DataFrame, new_range: Range) -> pd.DataFrame:
-    """d"""
-
-    return (
-        data * (new_range.max_value - new_range.min_value) / 2
-        + (new_range.max_value + new_range.min_value) / 2
-    )
-
-
-def apply_norm(
-    norm: Norm, neg_vars: list[str] | None = None, new_range: Range | None = None
-) -> pd.DataFrame:
-    """d"""
-    norm.fit()
-    norm_data = norm.transform()
-    if neg_vars:
-        # FIXME: esto es una mierda, se invierte todo el dataframe y despues se filtra, deberia ser al reves
-        norm_data[neg_vars] = norm.inverse_transform()[neg_vars]
-    if new_range:
-        norm_data = change_range(norm_data, new_range)
-    return norm_data
-
-
-if __name__ == "__main__":
-    data = pd.read_excel("test/datasets/data.xlsx", index_col=0)
-    normalizations = [Classic, MinMaxNorm, Balanced]
-    for norm in normalizations:
-        norm_data = apply_norm(norm(data))
-        print(norm_data)
+NORMALIZATIONS = {
+    "classic": Classic,
+    "min_max": MinMaxNorm,
+    "balanced": Balanced,
+}

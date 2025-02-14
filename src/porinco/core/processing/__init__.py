@@ -1,1 +1,1 @@
-from . import norm
+from .norm import NORMALIZATIONS

@@ -10,7 +10,7 @@ class SelectionFrame(ctk.CTkFrame):
         """Create the selection frame."""
         super().__init__(*args, **kwargs)
 
-    def create_widgets(self) -> None:
+    def place_widgets(self, label: ctk.CTkLabel, frame: ctk.CTkFrame) -> None:
         """Create the widgets."""
-        ctk.CTkLabel(self, text="Normalization").place(relx=0.01, rely=0.01)
-        ...
+        label.place(relx=0.01, rely=0.01)
+        frame.place(relx=0.5, rely=1.0, relwidth=0.8, relheight=0.8, anchor="s")

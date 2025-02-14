@@ -40,6 +40,7 @@ class AutoArrangeFrame(ctk.CTkFrame):
 
         return total_height
 
+    # TODO: cambiar para que cuando cambie el tamaño del frame se recalcule la posición de los widgets
     def _place_widgets(self, widgets: list[tk.Widget]) -> None:
         """Place the widgets in the frame."""
 
