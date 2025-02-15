@@ -5,6 +5,7 @@ from typing import Protocol
 import customtkinter as ctk
 
 from . import widgets as wdg
+from .polarity_window import PolarityWindow
 
 TITLE = "PORINCO"
 GEOMETRY = "1400x800"
@@ -19,6 +20,7 @@ class Presenter(Protocol):
     def export_file(self) -> None: ...
     def update_selected_norm(self, norm: str) -> None: ...
     def apply_and_display_norm(self) -> None: ...
+    def open_polarity_window(self) -> None: ...
 
 
 class MainWindow(ctk.CTk):
@@ -38,7 +40,7 @@ class MainWindow(ctk.CTk):
         self.treeview.place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.75)
 
         self._create_data_file_module(presenter)
-        self._create_polarity_module()
+        self._create_polarity_module(presenter)
         self._create_norm_module(presenter)
 
     def _create_data_file_module(self, presenter: Presenter) -> None:
@@ -57,7 +59,7 @@ class MainWindow(ctk.CTk):
         btns = [ctk.CTkButton(frame, **kwargs) for kwargs in btns_kwargs]
         frame.place_widgets(btns)
 
-    def _create_polarity_module(self) -> None:
+    def _create_polarity_module(self, presenter: Presenter) -> None:
         """Create the polarity module."""
         frame = ctk.CTkFrame(self)
         frame.place(relx=0.17, rely=0.77, relwidth=0.18, relheight=0.05)
@@ -66,7 +68,9 @@ class MainWindow(ctk.CTk):
         frame.columnconfigure(1, weight=0)
         frame.columnconfigure(2, weight=1)
 
-        btn = ctk.CTkButton(frame, text="Polarity")
+        btn = ctk.CTkButton(
+            frame, text="Polarity", command=presenter.open_polarity_window
+        )
         btn.grid(row=0, column=0, padx=(10, 5), pady=5)
 
         cb = ctk.CTkCheckBox(frame, text="Taxonomy")
@@ -97,3 +101,8 @@ class MainWindow(ctk.CTk):
 
         outer_frame.place(relx=0.17, rely=0.83, relwidth=0.18, relheight=0.16)
         outer_frame.place_widgets(label, iner_frame)
+
+    def create_polarity_window(self, vars: list[str]) -> ctk.CTkToplevel:
+        """Create and show the polarity selection window."""
+        polarity_window = PolarityWindow(vars)
+        return polarity_window

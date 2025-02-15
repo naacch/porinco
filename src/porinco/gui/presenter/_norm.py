@@ -1,5 +1,6 @@
 """Private module for normalization classes."""
 
+import dataclasses
 from typing import Protocol
 
 import pandas as pd
@@ -13,7 +14,8 @@ class Norm(Protocol):
     def inverse_transform(self) -> pd.DataFrame: ...
 
 
-class Range(Protocol):
+@dataclasses.dataclass
+class Range:
     """d"""
 
     min_value: float

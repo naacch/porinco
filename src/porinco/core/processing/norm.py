@@ -103,7 +103,7 @@ class MinMaxNorm(LinealNorm):
         return {"min_value", "max_value"}
 
 
-class Balanced(LinealNorm):
+class Balanced(Norm):
     """Balanced Normalization: Scales data between -1 and 1."""
 
     def fit(self) -> None:
@@ -121,6 +121,19 @@ class Balanced(LinealNorm):
         # xd
         norm_data = (self.data - median) / (max_value - median)
         norm_data[self.data <= median] = (self.data[self.data <= median] - median) / (
+            median - min_value
+        )
+        return norm_data
+
+    def inverse_transform(self) -> pd.DataFrame:
+        """Applies inverse transformation."""
+        median = self.params["median"]
+        min_value = self.params["min_value"]
+        max_value = self.params["max_value"]
+
+        # xd
+        norm_data = (median - self.data) / (max_value - median)
+        norm_data[self.data <= median] = (median - self.data[self.data <= median]) / (
             median - min_value
         )
         return norm_data
