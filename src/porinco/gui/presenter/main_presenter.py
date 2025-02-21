@@ -1,5 +1,7 @@
 """Main window presenter."""
 
+from __future__ import annotations
+
 import tkinter as tk
 from typing import Protocol
 
@@ -15,10 +17,14 @@ FILETYPES = [
 ]
 
 NORM_FIXED_RANGE = {"balanced": _norm.Range(70, 130)}
+ICON_PATH = "src/porinco/gui/resources/icon.ico"
 
 
 class MainWindow(Protocol):
+    def create_ui(self, presenter: MainPresenter) -> None: ...
     def create_polarity_window(self, vars: list[str]) -> ...: ...
+    def mainloop(self) -> None: ...
+    def change_icon(self, icon_path: str) -> None: ...
 
 
 class Model(Protocol):
@@ -98,3 +104,9 @@ class MainPresenter:
     def update_negative_variables(self, neg_vars: list[str]) -> None:
         """Update the negative variables."""
         self.main_model.neg_vars = neg_vars
+
+    def run(self) -> None:
+        """Run the main window."""
+        self.main_window.create_ui(self)
+        self.main_window.change_icon(ICON_PATH)
+        self.main_window.mainloop()

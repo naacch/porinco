@@ -1,7 +1,11 @@
 """Main module for the application."""
 
+import customtkinter as ctk
+
 from porinco import core, gui
 from porinco.gui import presenter
+
+ctk.set_default_color_theme("src/porinco/gui/resources/themes/metal.json")
 
 
 def main() -> None:
@@ -11,8 +15,7 @@ def main() -> None:
     main_presenter = presenter.MainPresenter(
         main_window, main_model, core.NORMALIZATIONS
     )
-    main_window.create_ui(main_presenter)
-    main_window.mainloop()
+    main_presenter.run()
 
 
 if __name__ == "__main__":
