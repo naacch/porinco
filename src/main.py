@@ -13,7 +13,7 @@ def main() -> None:
     main_window = gui.MainWindow()
     main_model = core.MainModel()
     main_presenter = presenter.MainPresenter(
-        main_window, main_model, core.NORMALIZATIONS
+        main_window, main_model, core.NORMALIZATIONS, core.WEIGHTINGS
     )
     main_presenter.run()
 

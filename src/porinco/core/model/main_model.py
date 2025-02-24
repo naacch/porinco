@@ -1,6 +1,6 @@
 """Main model for the application."""
 
-from typing import Protocol
+from typing import Callable
 
 import pandas as pd
 
@@ -14,9 +14,7 @@ READ_FUNCTIONS = {
     "xlsx": pd.read_excel,
 }
 
-
-class Presenter(Protocol):
-    """Presenter protocol."""
+WeightingFunc = Callable[[pd.DataFrame], pd.Series]
 
 
 class MainModel:
@@ -26,7 +24,9 @@ class MainModel:
         """Create the main model."""
         self.raw_data = pd.DataFrame()
         self.norm_data = pd.DataFrame()
-        self.neg_vars = []
+        self.norm_range = None
+        self.weighting = None
+        self.weighted_data = pd.DataFrame()
 
     def read_data(self, filepath: str, *args, **kwargs) -> pd.DataFrame:
         """Read a file."""
@@ -43,7 +43,7 @@ class MainModel:
 
     # FIXME: cambiar
     def apply_norm(
-        self, norm: _norm.Norm, new_range: _norm.Range | None = None
+        self, norm: _norm.Norm, neg_vars: list[str] | None = None
     ) -> pd.DataFrame:
         """d"""
         if self.raw_data.empty:
@@ -52,12 +52,26 @@ class MainModel:
         norm.fit()
         self.norm_data = norm.transform()
 
-        if self.neg_vars:
-            # FIXME: esto es una mierda, se invierte todo el dataframe
-            # y despues se filtra, deberia ser al reves
-            self.norm_data[self.neg_vars] = norm.inverse_transform()[self.neg_vars]
+        # FIXME: esto es una mierda, se invierte todo el dataframe
+        # y despues se filtra, deberia ser al reves
+        if neg_vars:
+            self.norm_data[neg_vars] = norm.inverse_transform()[neg_vars]
 
-        if new_range:
-            self.norm_data = self._change_range(self.norm_data, new_range)
+        if self.norm_range:
+            self.norm_data = self._change_range(self.norm_data, self.norm_range)
 
         return self.norm_data
+
+    def calculate_weighting(self, weighting_func: WeightingFunc) -> pd.DataFrame:
+        """d"""
+        self.weighting = weighting_func(
+            self.raw_data if self.norm_data.empty else self.norm_data
+        )
+        return self.weighting
+
+    def calculate_weighted_data(self) -> pd.DataFrame:
+        """d"""
+        self.weighted_data = (
+            self.raw_data if self.norm_data.empty else self.norm_data * self.weighting
+        )
+        return self.weighted_data

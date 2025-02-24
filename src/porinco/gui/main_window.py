@@ -4,9 +4,11 @@ import tkinter as tk
 from typing import Any, Protocol
 
 import customtkinter as ctk
+import pandas as pd
 
 from . import widgets as wdg
 from .polarity_window import PolarityWindow
+from .weighting_window import WeightingWindow
 
 TITLE = "porinco"
 GEOMETRY = "1400x800"
@@ -15,13 +17,18 @@ GEOMETRY = "1400x800"
 class Presenter(Protocol):
     """Presenter for the main window."""
 
-    normalizations: dict  # TODO: typehints
+    normalizations: dict
+    weightings: dict
 
     def open_file(self) -> None: ...
     def export_file(self) -> None: ...
-    def update_selected_norm(self, norm: str) -> None: ...
+    def norm_option_menu_func(self, norm: str) -> None: ...
     def apply_and_display_norm(self) -> None: ...
     def open_polarity_window(self) -> None: ...
+    def is_num(self, s: str) -> None: ...
+    def get_new_norm_range(self) -> None: ...
+    def _update_weighting_func(self, weighting: str) -> None: ...
+    def open_weighting_window(self) -> None: ...
 
 
 class MainWindow(ctk.CTk):
@@ -30,15 +37,23 @@ class MainWindow(ctk.CTk):
     def __init__(self, *args, **kwargs) -> None:
         """Create the main window."""
         super().__init__(*args, **kwargs)
+
         self.treeview = None
+        self.min_value_entry = None
+        self.max_value_entry = None
+        self.taxonomy_cb = None
+
         self.title(TITLE)
         self.geometry(GEOMETRY)
 
     def create_ui(self, presenter: Presenter) -> None:
         """Create the ui for the main window."""
 
+        # Cambiar color treeview
         self.treeview = wdg.CustomTreeview(self)
         self.treeview.place(relx=0.01, rely=0.01, relwidth=0.98, relheight=0.75)
+        self.treeview.add_horizontal_scrollbar()
+        self.treeview.add_vertical_scrollbar()
 
         self._create_data_file_module(presenter)
 
@@ -47,17 +62,21 @@ class MainWindow(ctk.CTk):
         norm_module_kwargs = {
             "label_txt": "Normalization",
             "options": list(presenter.normalizations.keys()),
-            "option_menu_command": lambda value: presenter.update_selected_norm(value),
+            "option_menu_command": lambda value: presenter.norm_option_menu_func(value),
             "button_command": presenter.apply_and_display_norm,
         }
         norm_module = self._create_selection_frame(norm_module_kwargs)
         norm_module.place(relx=0.17, rely=0.83, relwidth=0.18, relheight=0.16)
 
-        self._create_range_module()
+        self._create_range_module(presenter)
 
         weighting_module_kwargs = {
             "label_txt": "Weighting",
-            "options": [],
+            "options": list(presenter.weightings.keys()),
+            "option_menu_command": lambda value: presenter._update_weighting_func(
+                value
+            ),
+            "button_command": presenter.open_weighting_window,
         }
         weighting_module = self._create_selection_frame(weighting_module_kwargs)
         weighting_module.place(relx=0.62, rely=0.83, relwidth=0.18, relheight=0.16)
@@ -104,8 +123,8 @@ class MainWindow(ctk.CTk):
         )
         btn.grid(row=0, column=0, padx=(10, 5), pady=5)
 
-        cb = ctk.CTkCheckBox(frame, text="Taxonomy")
-        cb.grid(row=0, column=2, padx=(5, 10), pady=5)
+        self.taxonomy_cb = ctk.CTkCheckBox(frame, text="Taxonomy")
+        self.taxonomy_cb.grid(row=0, column=2, padx=(5, 10), pady=5)
 
     def _create_selection_frame(self, widgets_kwargs: dict[str:Any]) -> None:
         """Create the selection frame."""
@@ -119,7 +138,7 @@ class MainWindow(ctk.CTk):
         return polarity_window
 
     # TODO: esto es caca, refactor
-    def _create_range_module(self) -> None:
+    def _create_range_module(self, presenter: Presenter) -> None:
         """Create the range module."""
         frame = ctk.CTkFrame(self)
         frame.place(relx=0.36, rely=0.83, relwidth=0.25, relheight=0.16)
@@ -127,15 +146,30 @@ class MainWindow(ctk.CTk):
         ctk.CTkLabel(frame, text="Min range").grid(
             row=0, column=0, sticky="w", padx=(15, 0), pady=(10, 0)
         )
-        ctk.CTkEntry(frame).grid(row=1, column=0, padx=5, pady=(0, 10))
+        self.min_value_entry = ctk.CTkEntry(
+            frame,
+            validate="key",
+            validatecommand=(self.register(presenter.is_num), "%P"),
+        )
+        self.min_value_entry.grid(row=1, column=0, padx=5, pady=(0, 10))
 
         ctk.CTkLabel(frame, text="Max range").grid(
             row=0, column=2, sticky="w", padx=(15, 0), pady=(10, 0)
         )
-        ctk.CTkEntry(frame).grid(row=1, column=2, padx=5, pady=(0, 10))
+        self.max_value_entry = ctk.CTkEntry(
+            frame,
+            validate="key",
+            validatecommand=(self.register(presenter.is_num), "%P"),
+        )
+        self.max_value_entry.grid(row=1, column=2, padx=5, pady=(0, 10))
 
         # Button
-        btn = ctk.CTkButton(frame, text="Accept", fg_color="grey67")
+        btn = ctk.CTkButton(
+            frame,
+            text="Accept",
+            fg_color="grey67",
+            command=presenter.get_new_norm_range,
+        )
         btn.grid(row=2, column=0, columnspan=3, pady=(0, 10))
 
         frame.grid_rowconfigure(2, weight=1)
@@ -165,3 +199,8 @@ class MainWindow(ctk.CTk):
     def change_icon(self, path: str) -> None:
         """Change the icon of the window."""
         self.iconbitmap(path)
+
+    def create_weighting_window(self) -> ctk.CTkToplevel:
+        """Create and show the weighting window."""
+        weighting_window = WeightingWindow()
+        return weighting_window

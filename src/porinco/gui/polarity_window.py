@@ -4,30 +4,28 @@ from typing import Protocol
 
 import customtkinter as ctk
 
+from .base_popup_window import BasePopupWindow
+
 TITLE = "Polarity"
 GEOMETRY = "200x400"
 
 
 class Presenter(Protocol):
-    def update_negative_variables(self, neg_vars: list[str]) -> None: ...
+    def _update_negative_variables(self, neg_vars: list[str]) -> None: ...
 
 
-class PolarityWindow(ctk.CTkToplevel):
+class PolarityWindow(BasePopupWindow):
     """d"""
 
     def __init__(self, vars: list[str]) -> None:
-        super().__init__()
+        """Create the polarity window."""
+        super().__init__(title=TITLE, geometry=GEOMETRY)
+
+        # FIXME: no funciona
+        self.change_icon("src/porinco/gui/resources/icon.ico")
 
         self.vars = vars
         self.check_boxes = []
-        self.title(TITLE)
-        self.geometry(GEOMETRY)
-
-        self.protocol("WM_DELETE_WINDOW", self._on_close)
-
-    def _on_close(self) -> None:
-        """Restore focus to the main window when closing."""
-        self.grab_release()
 
     def _create_widgets(self, presenter: Presenter) -> None:
         """Create widgets in the window."""
@@ -56,7 +54,7 @@ class PolarityWindow(ctk.CTkToplevel):
 
     def button_function(self, presenter: Presenter) -> list[str]:
         """Get the variables with negative polarity."""
-        presenter.update_negative_variables(
+        presenter._update_negative_variables(
             [cb.cget("text") for cb in self.check_boxes if cb.get() == 1]
         )
         self.destroy()
