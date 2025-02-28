@@ -79,7 +79,7 @@ class Classic(LinealNorm):
         return (self.data - self.params["mean"]) / self.params["std"]
 
 
-class MinMaxNorm(LinealNorm):
+class MinMax(LinealNorm):
     """Min-max normalization."""
 
     def fit(self) -> None:
@@ -145,6 +145,6 @@ class Balanced(Norm):
 
 NORMALIZATIONS = {
     "classic": Classic,
-    "min_max": MinMaxNorm,
+    "min_max": MinMax,
     "balanced": Balanced,
 }

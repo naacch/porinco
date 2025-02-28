@@ -5,6 +5,7 @@ import customtkinter as ctk
 from porinco import core, gui
 from porinco.gui import presenter
 
+# FIXME
 ctk.set_default_color_theme("src/porinco/gui/resources/themes/metal.json")
 
 
