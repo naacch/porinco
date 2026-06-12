@@ -1,6 +1,6 @@
 import pytest
 
-from porinco.domain.range import Range
+from porinco.domain.models.range import Range
 
 
 @pytest.mark.parametrize("minimum, maximum", [(1.0, 0), (1.0, 1.0)], ids=["gt", "eq"])
